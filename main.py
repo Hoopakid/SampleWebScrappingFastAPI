@@ -1,11 +1,11 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, APIRouter
 
 from datum import use_playwright, get_calls_fast
 
 app = FastAPI()
+router = APIRouter()
 
-
-@app.get('/data')
+@router.get('/data')
 def get_data():
     ctx = []
     call_sales = use_playwright()
