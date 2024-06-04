@@ -12,13 +12,15 @@ PASSWORD = os.environ.get('PASSWORD')
 
 def use_playwright():
     with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
+        browser = p.chromium.launch(headless=False)
         page = browser.new_page()
         page.goto('https://panel.strawberryhouse.uz/login')
-        username = page.get_by_placeholder("Логин")
-        username.fill(USERNAME)
-        password = page.get_by_placeholder("Пароль")
-        password.fill(PASSWORD)
+        username = page.locator('[placeholder="Логин"]')
+        username.fill('DUSTYOR')
+
+        password = page.locator('[placeholder="Пароль"]')
+        password.fill('Dk77Dk11')
+
         page.get_by_role('button').click()
         today = datetime.now().date()
         yesterday = (datetime.now() - timedelta(days=1)).date()
