@@ -5,6 +5,7 @@ from datum import use_playwright, get_calls_fast
 app = FastAPI()
 router = APIRouter()
 
+
 @router.get('/data')
 def get_data():
     ctx = []
@@ -15,3 +16,6 @@ def get_data():
         'call_sales': call_sales
     })
     return ctx
+
+
+app.include_router(router)
