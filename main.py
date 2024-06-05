@@ -26,19 +26,22 @@ def get_data():
         'Dilnoza': 16,
     }]
     call_sales = use_playwright()
-    data = []
-    for call in call_sales:
-        for key, val in call.items():
-            key = [i for i in leads[0].keys() if i.lower() == key.lower()]
-            lead = leads[0].get(key[0])
-            data.append({
-                key[0]: {
-                    'sales_count': val['sales_count'],
-                    'sales_price': val['sales_price'],
-                    'lead': lead,
-                    'conversion': f'{round(val["sales_count"] / lead * 100, 2)}%'
-                }
-            })
+    data = {
+        "call_sales": call_sales,
+        "leads": leads
+    }
+    # for call in call_sales:
+    #     for key, val in call.items():
+    #         key = [i for i in leads[0].keys() if i.lower() == key.lower()]
+    #         lead = leads[0].get(key[0])
+    #         data.append({
+    #             key[0]: {
+    #                 'sales_count': val['sales_count'],
+    #                 'sales_price': val['sales_price'],
+    #                 'lead': lead,
+    #                 'conversion': f'{round(val["sales_count"] / lead * 100, 2)}%'
+    #             }
+    #         })
     return data
 
 

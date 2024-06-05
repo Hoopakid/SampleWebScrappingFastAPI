@@ -4,6 +4,7 @@ from time import sleep
 from playwright.async_api import async_playwright
 from playwright.sync_api import sync_playwright
 from datetime import datetime
+from pprint import pprint
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -43,6 +44,9 @@ def use_playwright():
                 datas.append(temp)
         browser.close()
     return datas
+
+
+pprint(use_playwright())
 
 
 async def take_screenshot():
