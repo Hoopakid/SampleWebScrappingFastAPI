@@ -1,7 +1,7 @@
 import os
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from scrapping import use_playwright, take_screenshot
+from scrapping import use_playwright, take_screenshot, convert_to_xlsx
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
 
@@ -50,6 +50,16 @@ async def get_scrapped_photo():
     try:
         file_path = await take_screenshot()
         return FileResponse(file_path, filename=os.path.basename(file_path))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/get-excel-data')
+async def get_excel_data():
+    try:
+        excel = await convert_to_xlsx()
+        if excel == True:
+            return FileResponse('data.xlsx', filename=os.path.basename('data.xlsx'))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
