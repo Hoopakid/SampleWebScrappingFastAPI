@@ -46,9 +46,6 @@ def use_playwright():
     return datas
 
 
-pprint(use_playwright())
-
-
 async def take_screenshot():
     async with async_playwright() as p:
         browser = await p.chromium.launch(headless=True)
