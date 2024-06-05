@@ -1,7 +1,9 @@
 import os
+import asyncio
 from time import sleep
+from playwright.async_api import async_playwright
 from playwright.sync_api import sync_playwright
-from datetime import datetime, timedelta
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -41,3 +43,15 @@ def use_playwright():
                 datas.append(temp)
         browser.close()
     return datas
+
+
+async def take_screenshot():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page(viewport={'width': 1280, 'height': 720})
+        await asyncio.sleep(2)
+        await page.goto('https://test-analytic.vercel.app/')
+        await asyncio.sleep(5)
+        await page.screenshot(path='calls.png')
+        await browser.close()
+    return 'calls.png'

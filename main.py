@@ -1,7 +1,9 @@
+import os
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
-from pprint import pprint
-from datum import use_playwright
+from scrapping import use_playwright, take_screenshot
+from fastapi.exceptions import HTTPException
+from fastapi.responses import FileResponse
 
 app = FastAPI()
 router = APIRouter()
@@ -38,6 +40,15 @@ def get_data():
                 }
             })
     return data
+
+
+@router.get('/scrapped-photo')
+async def get_scrapped_photo():
+    try:
+        file_path = await take_screenshot()
+        return FileResponse(file_path, filename=os.path.basename(file_path))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 app.include_router(router)
