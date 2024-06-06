@@ -72,7 +72,7 @@ async def sales_by_playwright():
 
         await page.get_by_role('button').click()
         today = datetime.now().date()
-        yesterday = (datetime.now() - timedelta(days=362)).date()
+        yesterday = (datetime.now() - timedelta(days=366)).date()
         sleep(3)
         last_day_url = f'https://panel.strawberryhouse.uz/statistics/clients?start={str(yesterday)}+00%3A00&end={str(yesterday)}+19%3A00'
         await page.goto(last_day_url)
