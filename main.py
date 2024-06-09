@@ -1,6 +1,8 @@
 import os
 from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
+
+from Bitrix.formatting import format_bitrix_data
 from scrapping import use_playwright, take_screenshot, convert_to_xlsx
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
@@ -60,6 +62,17 @@ async def get_excel_data():
         excel = await convert_to_xlsx()
         if excel == True:
             return FileResponse('data.xlsx', filename=os.path.basename('data.xlsx'))
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/data-google-sheet')
+async def get_google_sheet():
+    try:
+        bitrix_data = await format_bitrix_data()
+        if bitrix_data == False:
+            return {"status": 400, "detail": "There are some problems with Bitrix, please try again later!"}
+        return {"status": 200, "data": bitrix_data}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
