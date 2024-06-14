@@ -3,9 +3,11 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from Bitrix.formatting import format_bitrix_data
+from Sheet.all import get_datas
 from scrapping import use_playwright, take_screenshot, convert_to_xlsx
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
+from Sheet.akb import grouped_agent_clients
 
 app = FastAPI()
 router = APIRouter()
@@ -73,6 +75,28 @@ async def get_google_sheet():
         if bitrix_data == False:
             return {"status": 400, "detail": "There are some problems with Bitrix, please try again later!"}
         return {"status": 200, "data": bitrix_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/get-akb-data')
+async def get_akb_data():
+    try:
+        akb_data = await grouped_agent_clients()
+        if akb_data == False:
+            return {"status": 400, "detail": "There are some problems with AKB, please try again later!"}
+        return {"status": 200, "data": akb_data}
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/get-all-data')
+async def get_all_data():
+    try:
+        datas = await get_datas()
+        if datas == False:
+            return {"status": 400, "detail": "There are some problems with Margarit, please try again later!"}
+        return FileResponse('Sheet/inserting_data.xlsx', filename=os.path.basename('inserting_data.xlsx'))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

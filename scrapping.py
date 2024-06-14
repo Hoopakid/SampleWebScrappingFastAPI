@@ -61,7 +61,7 @@ async def take_screenshot():
 
 async def sales_by_playwright():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto('https://panel.strawberryhouse.uz/login')
         username = page.locator('[placeholder="Логин"]')
@@ -74,7 +74,6 @@ async def sales_by_playwright():
         yesterday = (datetime.now() - timedelta(days=361)).date()
         sleep(3)
         last_day_url = f'https://panel.strawberryhouse.uz/statistics/clients?start={str(yesterday)}+00%3A00&end={str(yesterday)}+19%3A00'
-        print(last_day_url)
         await page.goto(last_day_url)
 
         await page.wait_for_selector('table')
@@ -131,5 +130,3 @@ async def convert_to_xlsx():
     df.to_excel('data.xlsx', index=False)
 
     return True
-
-asyncio.run(convert_to_xlsx())
