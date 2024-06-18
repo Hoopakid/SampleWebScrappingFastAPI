@@ -1,5 +1,6 @@
 import os
 import json
+import asyncio
 import logging
 
 import pandas as pd
@@ -81,3 +82,5 @@ async def get_datas():
     except Exception as e:
         logging.error(f'Error in get_datas: {e}')
         return False
+
+asyncio.run(get_datas())
