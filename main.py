@@ -1,5 +1,6 @@
 import os
 from fastapi import FastAPI, APIRouter
+import logging
 from fastapi.middleware.cors import CORSMiddleware
 
 from Bitrix.formatting import format_bitrix_data
@@ -93,7 +94,9 @@ async def get_akb_data():
 @router.get('/get-all-data')
 async def get_all_data():
     try:
+        logging.info('Started')
         datas = await get_datas()
+        logging.info('Got')
         if datas == False:
             return {"status": 400, "detail": "There are some problems with Margarit, please try again later!"}
         return FileResponse('inserting_data.xlsx', filename=os.path.basename('inserting_data.xlsx'))
