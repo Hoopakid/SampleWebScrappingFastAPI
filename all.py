@@ -36,8 +36,14 @@ async def get_datas():
 
             logging.info('Extracting report data')
             data = await page.query_selector('pre')
+            if not data:
+                raise Exception('Report data element not found')
+
             logging.info('Getting text content')
             raw_data = await data.text_content()
+            if not raw_data:
+                raise Exception('No text content found in report data element')
+
             logging.info('Loading data')
             raw_data = json.loads(raw_data)
 
