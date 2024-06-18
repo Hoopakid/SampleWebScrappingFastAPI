@@ -35,6 +35,8 @@ async def get_datas():
                 'https://margarittotash.salesdoc.io/report/reportBuilder/getResult?reportType=order&datestart=2024-06-01&endstart=2024-06-08&bydate=DATE_LOAD&status%5B%5D=2&status%5B%5D=3&sum=on&count=on&akb=on&field=%5B%22date%22%2C%22client%22%2C%22city%22%2C%22agent%22%2C%22product%22%2C%22productCat%22%5D')
 
             logging.info('Extracting report data')
+            await page.wait_for_selector('pre')
+            logging.info('Querying report data element')
             data = await page.query_selector('pre')
             if not data:
                 raise Exception('Report data element not found')
