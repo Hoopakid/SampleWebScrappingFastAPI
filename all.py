@@ -36,7 +36,9 @@ async def get_datas():
 
             logging.info('Extracting report data')
             informations = await page.query_selector('pre')
+            logging.info('Getting text content')
             raw_data = await informations.text_content()
+            logging.info('Loading data')
             raw_data = json.loads(raw_data)
 
             logging.info('Processing data')
