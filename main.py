@@ -3,7 +3,7 @@ from fastapi import FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from Bitrix.formatting import format_bitrix_data
-from Sheet.all import get_datas
+from all import get_datas
 from scrapping import use_playwright, take_screenshot, convert_to_xlsx
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
@@ -96,7 +96,7 @@ async def get_all_data():
         datas = await get_datas()
         if datas == False:
             return {"status": 400, "detail": "There are some problems with Margarit, please try again later!"}
-        return FileResponse('Sheet/inserting_data.xlsx', filename=os.path.basename('inserting_data.xlsx'))
+        return FileResponse('inserting_data.xlsx', filename=os.path.basename('inserting_data.xlsx'))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 

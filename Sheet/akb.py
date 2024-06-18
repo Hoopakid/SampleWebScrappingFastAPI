@@ -180,7 +180,8 @@ async def use_playwright():
         await password.fill(MARGARIT_PASSWORD)
         button = page.get_by_role('button')
         await button.click()
-        await page.goto('https://margarittotash.salesdoc.io/report/saleDetail/pivotData?date_load=2024-05-17,2024-06-14')
+        await page.goto(
+            'https://margarittotash.salesdoc.io/report/saleDetail/pivotData?date_load=2024-05-17,2024-06-14')
         informations = await page.query_selector('pre')
         raw_data = await informations.text_content()
         datas = json.loads(raw_data)
@@ -287,8 +288,10 @@ async def grouped_clients():
                         client_name = client['result']['client'][0]['name']
                         temp = {
                             'client_name': client_name,
-                            'agent_id': val.get('agent_id', 'N/A') if isinstance(val, dict) else val[0].get('agent_id', 'N/A'),
-                            'date_created': val.get('date_ordered', 'N/A') if isinstance(val, dict) else val[0].get('date_ordered', 'N/A')
+                            'agent_id': val.get('agent_id', 'N/A') if isinstance(val, dict) else val[0].get('agent_id',
+                                                                                                            'N/A'),
+                            'date_created': val.get('date_ordered', 'N/A') if isinstance(val, dict) else val[0].get(
+                                'date_ordered', 'N/A')
                         }
                         if key == 'Bulut':
                             ctx["Bulut"].append(temp)
