@@ -1,6 +1,6 @@
 import os
 import json
-import asyncio
+import logging
 
 import pandas as pd
 from dotenv import load_dotenv
@@ -11,24 +11,35 @@ load_dotenv()
 MARGARIT_USERNAME = os.environ.get('MARGARIT_USER')
 MARGARIT_PASSWORD = os.environ.get('MARGARIT_PASSWORD')
 
+logging.basicConfig(level=logging.INFO)
+
 
 async def get_datas():
     try:
         async with async_playwright() as p:
             browser = await p.chromium.launch(headless=True)
             page = await browser.new_page()
+            logging.info('Navigating to login page')
             await page.goto('https://margarittotash.salesdoc.io/site/login')
+
+            logging.info('Filling login form')
             username = page.locator('[name="LoginForm[username]"]')
             await username.fill(MARGARIT_USERNAME)
             password = page.get_by_placeholder('Пароль')
             await password.fill(MARGARIT_PASSWORD)
             button = page.get_by_role('button')
             await button.click()
+
+            logging.info('Navigating to report page')
             await page.goto(
                 'https://margarittotash.salesdoc.io/report/reportBuilder/getResult?reportType=order&datestart=2024-06-01&endstart=2024-06-08&bydate=DATE_LOAD&status%5B%5D=2&status%5B%5D=3&sum=on&count=on&akb=on&field=%5B%22date%22%2C%22client%22%2C%22city%22%2C%22agent%22%2C%22product%22%2C%22productCat%22%5D')
+
+            logging.info('Extracting report data')
             informations = await page.query_selector('pre')
             raw_data = await informations.text_content()
             raw_data = json.loads(raw_data)
+
+            logging.info('Processing data')
             df = pd.DataFrame(raw_data)
             df.to_csv('all.csv', index=False)
             data = pd.read_csv('all.csv')
@@ -37,6 +48,7 @@ async def get_datas():
             combined = {}
             three_combined = {}
             cnt = 0
+
             for d in data:
                 if cnt == 3:
                     three_combined = dict(reversed(list(three_combined.items())))
@@ -49,12 +61,15 @@ async def get_datas():
                     if key == 'Итоги':
                         three_combined[d['Итоги']] = d['value']
                         break
-                    elif key is not combined:
+                    elif key not in combined:
                         combined[key] = value
                 cnt += 1
+
+            logging.info('Saving processed data to Excel')
             data = pd.DataFrame(new_data)
             data.to_excel('inserting_data.xlsx', index=False)
             await browser.close()
             return True
-    except Exception:
+    except Exception as e:
+        logging.error(f'Error in get_datas: {e}')
         return False

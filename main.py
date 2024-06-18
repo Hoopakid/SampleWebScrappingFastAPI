@@ -20,6 +20,8 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+logging.basicConfig(level=logging.INFO)
+
 
 @router.get('/data')
 def get_data():
@@ -94,13 +96,16 @@ async def get_akb_data():
 @router.get('/get-all-data')
 async def get_all_data():
     try:
-        logging.info('Started')
+        logging.info('Starting data retrieval')
         datas = await get_datas()
-        logging.info('Got')
+        logging.info('Data retrieval completed')
         if datas == False:
-            return {"status": 400, "detail": "There are some problems with Margarit, please try again later!"}
+            logging.error('Data retrieval failed')
+            raise HTTPException(status_code=400,
+                                detail="There are some problems with Margarit, please try again later!")
         return FileResponse('inserting_data.xlsx', filename=os.path.basename('inserting_data.xlsx'))
     except Exception as e:
+        logging.error(f'Error in /get-all-data: {e}')
         raise HTTPException(status_code=500, detail=str(e))
 
 
