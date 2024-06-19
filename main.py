@@ -25,11 +25,14 @@ logging.basicConfig(level=logging.INFO)
 
 @router.get('/data')
 async def get_data():
-    call_sales = await use_playwright()
-    data = {
-        "call_sales": call_sales
-    }
-    return data
+    try:
+        call_sales = await use_playwright()
+        data = {
+            "call_sales": call_sales
+        }
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get('/scrapped-photo')

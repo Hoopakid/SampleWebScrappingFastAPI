@@ -17,13 +17,13 @@ PASSWORD = os.environ.get('PASSWORD')
 
 async def use_playwright():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
         await page.goto('https://panel.strawberryhouse.uz/login')
-        username = page.locator('[placeholder="Логин"]')
+        username = page.get_by_placeholder("Логин")
         await username.fill(USERNAME)
 
-        password = page.locator('[placeholder="Пароль"]')
+        password = page.get_by_placeholder('Пароль')
         await password.fill(PASSWORD)
 
         await page.get_by_role('button').click()
@@ -47,6 +47,9 @@ async def use_playwright():
                 datas.append(temp)
         await browser.close()
     return datas
+
+
+asyncio.run(use_playwright())
 
 
 async def take_screenshot():
