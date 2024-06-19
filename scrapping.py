@@ -139,6 +139,8 @@ async def translate_word(word: str, lang1: str, lang2: str):
         page = await browser.new_page()
         await page.goto(f'https://translate.google.co.uz/?hl=uz&sl={lang1}&tl={lang2}&op=translate')
         await page.fill('textarea', word)
-        translated_word = await page.locator('span .ryNqvb').inner_text()
+        # translated_word = await page.locator('span .ryNqvb').inner_text()
+        await page.wait_for_selector('span[jsname="W297wb"]')
+        translated_word = await page.locator('span[jsname="W297wb"]').inner_text()
         await browser.close()
     return translated_word
