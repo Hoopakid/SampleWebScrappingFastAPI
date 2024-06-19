@@ -28,7 +28,8 @@ async def use_playwright():
         await page.get_by_role('button').click()
         today = datetime.now().date()
         sleep(3)
-        last_day_url = f'https://panel.strawberryhouse.uz/statistics/operators?start={today}+00%3A00&end={str(today)}+21%3A30'
+        last_day_url = f'https://panel.strawberryhouse.uz/statistics/operators?start={today}+00%3A00&end={str(today)}+23%3A59'
+        print(last_day_url)
         await page.goto(last_day_url)
 
         await page.wait_for_selector('table')
@@ -40,8 +41,8 @@ async def use_playwright():
             if data[-1].endswith('сум'):
                 temp = {
                     data[1]: {
-                        'sales_count': int(data[2].replace(' шт', '').replace(' ', '')),
-                        'sales_price': int(data[3].replace(' сум', '').replace(' ', ''))
+                        'sales_count': int(data[6].replace(' шт', '').replace(' ', '')),
+                        'sales_price': int(data[5].replace(' сум', '').replace(' ', ''))
                     }}
                 datas.append(temp)
         await browser.close()
