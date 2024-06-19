@@ -5,7 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from Bitrix.formatting import format_bitrix_data
 from all import get_datas
-from scrapping import use_playwright, take_screenshot, convert_to_xlsx
+from scrapping import use_playwright, take_screenshot, convert_to_xlsx, translate_word
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
 from Sheet.akb import grouped_agent_clients
@@ -86,6 +86,19 @@ async def get_all_data():
         return FileResponse('inserting_data.xlsx', filename=os.path.basename('inserting_data.xlsx'))
     except Exception as e:
         logging.error(f'Error in /get-all-data: {e}')
+        raise HTTPException(status_code=500, detail=str(e))
+
+
+@router.get('/translate-word')
+async def translate_words(word: str, lang1: str, lang2: str):
+    try:
+        translate = await translate_word(word, lang1, lang2)
+        return {
+            "success": True,
+            "status": True,
+            "translated_word": translate
+        }
+    except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
 

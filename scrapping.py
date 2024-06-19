@@ -131,3 +131,14 @@ async def convert_to_xlsx():
     df.to_excel('data.xlsx', index=False)
 
     return True
+
+
+async def translate_word(word: str, lang1: str, lang2: str):
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        await page.goto(f'https://translate.google.co.uz/?hl=uz&sl={lang1}&tl={lang2}&op=translate')
+        await page.fill('textarea', word)
+        translated_word = await page.locator('span .ryNqvb').inner_text()
+        await browser.close()
+    return translated_word
