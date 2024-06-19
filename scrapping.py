@@ -1,3 +1,4 @@
+import logging
 import os
 import asyncio
 import pandas as pd
@@ -135,12 +136,16 @@ async def convert_to_xlsx():
 
 async def translate_word(word: str, lang1: str, lang2: str):
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
+        logging.info('Opening Google Translate')
         await page.goto(f'https://translate.google.co.uz/?hl=uz&sl={lang1}&tl={lang2}&op=translate')
+        logging.info('Translating word')
         await page.fill('textarea', word)
-        # translated_word = await page.locator('span .ryNqvb').inner_text()
+        logging.info('Waiting for translation')
         await page.wait_for_selector('span[jsname="W297wb"]')
+        logging.info('Getting translated word')
         translated_word = await page.locator('span[jsname="W297wb"]').inner_text()
+        logging.info('Closing browser')
         await browser.close()
     return translated_word

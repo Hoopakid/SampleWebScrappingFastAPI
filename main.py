@@ -92,7 +92,9 @@ async def get_all_data():
 @router.get('/translate-word')
 async def translate_words(word: str, lang1: str, lang2: str):
     try:
+        logging.info('Translating word')
         translate = await translate_word(word, lang1, lang2)
+        logging.info('Word translated')
         return {
             "success": True,
             "status": True,
