@@ -14,36 +14,37 @@ USERNAME = os.environ.get('USER_USERNAME')
 PASSWORD = os.environ.get('PASSWORD')
 
 
-def use_playwright():
-    with sync_playwright() as p:
-        browser = p.chromium.launch(headless=True)
-        page = browser.new_page()
-        page.goto('https://panel.strawberryhouse.uz/login')
+async def use_playwright():
+    async with async_playwright() as p:
+        browser = await p.chromium.launch(headless=True)
+        page = await browser.new_page()
+        await page.goto('https://panel.strawberryhouse.uz/login')
         username = page.locator('[placeholder="Логин"]')
-        username.fill(USERNAME)
+        await username.fill(USERNAME)
 
         password = page.locator('[placeholder="Пароль"]')
-        password.fill(PASSWORD)
+        await password.fill(PASSWORD)
 
-        page.get_by_role('button').click()
+        await page.get_by_role('button').click()
         today = datetime.now().date()
         sleep(3)
-        last_day_url = f'https://panel.strawberryhouse.uz/statistics/operators?start={str(today)}+00%3A00&end={str(today)}+20%3A30'
-        page.goto(last_day_url)
+        last_day_url = f'https://panel.strawberryhouse.uz/statistics/operators?start={today}+00%3A00&end={str(today)}+21%3A30'
+        await page.goto(last_day_url)
 
-        page.wait_for_selector('table')
-        rows = page.query_selector_all('table tbody tr')
+        await page.wait_for_selector('table')
+        rows = await page.query_selector_all('table tbody tr')
         datas = []
-        for row in rows:
-            data = [td.text_content() for td in row.query_selector_all('td')]
+        for r in rows:
+            row = await r.query_selector_all('td')
+            data = [await td.text_content() for td in row]
             if data[-1].endswith('сум'):
                 temp = {
                     data[1]: {
-                        'sales_count': int(data[6].replace(' шт', '')),
-                        'sales_price': int(data[7].replace(' сум', '').replace(' ', ''))
+                        'sales_count': int(data[2].replace(' шт', '').replace(' ', '')),
+                        'sales_price': int(data[3].replace(' сум', '').replace(' ', ''))
                     }}
                 datas.append(temp)
-        browser.close()
+        await browser.close()
     return datas
 
 
