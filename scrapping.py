@@ -136,7 +136,7 @@ async def convert_to_xlsx():
 
 async def translate_word(word: str, lang1: str, lang2: str):
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=False, args=['--enable-logging', '--v=1'])
         page = await browser.new_page()
         logging.info('Opening Google Translate')
         await page.goto(f'https://translate.google.co.uz/?hl=uz&sl={lang1}&tl={lang2}&op=translate')
