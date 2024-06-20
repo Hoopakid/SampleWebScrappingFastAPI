@@ -1,4 +1,6 @@
 import os
+from http.client import TEMPORARY_REDIRECT
+
 from fastapi import FastAPI, APIRouter
 import logging
 from fastapi.middleware.cors import CORSMiddleware
@@ -27,10 +29,9 @@ logging.basicConfig(level=logging.INFO)
 async def get_data():
     try:
         call_sales = await use_playwright()
-        data = {
-            "call_sales": call_sales
-        }
-        return data
+        return call_sales
+    except TEMPORARY_REDIRECT as e:
+        raise HTTPException(status_code=303, detail=str(e))
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
