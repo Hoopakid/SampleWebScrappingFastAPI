@@ -34,17 +34,16 @@ async def use_playwright():
 
         await page.wait_for_selector('table')
         rows = await page.query_selector_all('table tbody tr')
-        datas = []
+        datas = {}
         for r in rows:
             row = await r.query_selector_all('td')
             data = [await td.text_content() for td in row]
             if data[-1].endswith('сум'):
                 temp = {
-                    data[1]: {
-                        'sales_count': int(data[6].replace(' шт', '').replace(' ', '')),
-                        'sales_price': int(data[7].replace(' сум', '').replace(' ', ''))
-                    }}
-                datas.append(temp)
+                    'sales_count': int(data[6].replace(' шт', '').replace(' ', '')),
+                    'sales_price': int(data[7].replace(' сум', '').replace(' ', ''))
+                }
+                datas.update({data[0]: temp})
         await browser.close()
     return datas
 
