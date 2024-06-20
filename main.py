@@ -6,7 +6,7 @@ import logging
 from fastapi.middleware.cors import CORSMiddleware
 
 from Bitrix.formatting import format_bitrix_data
-from all import get_datas
+from all import getting_data
 from scrapping import use_playwright, take_screenshot, convert_to_xlsx, translate_word
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
@@ -81,13 +81,13 @@ async def get_akb_data():
 async def get_all_data():
     try:
         logging.info('Starting data retrieval')
-        datas = await get_datas()
+        datas = await getting_data()
         logging.info('Data retrieval completed')
-        if datas == False:
+        if datas.get('success') == False:
             logging.error('Data retrieval failed')
             raise HTTPException(status_code=400,
                                 detail="There are some problems with Margarit, please try again later!")
-        return FileResponse('inserting_data.xlsx', filename=os.path.basename('inserting_data.xlsx'))
+        return datas.get('data')
     except Exception as e:
         logging.error(f'Error in /get-all-data: {e}')
         raise HTTPException(status_code=500, detail=str(e))

@@ -43,12 +43,9 @@ async def use_playwright():
                     'sales_count': int(data[6].replace(' шт', '').replace(' ', '')),
                     'sales_price': int(data[7].replace(' сум', '').replace(' ', ''))
                 }
-                datas.update({data[0]: temp})
+                datas.update({data[1]: temp})
         await browser.close()
     return datas
-
-
-asyncio.run(use_playwright())
 
 
 async def take_screenshot():
