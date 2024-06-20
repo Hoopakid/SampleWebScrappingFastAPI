@@ -17,7 +17,7 @@ PASSWORD = os.environ.get('PASSWORD')
 
 async def use_playwright():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto('https://panel.strawberryhouse.uz/login')
         username = page.get_by_placeholder("Логин")
