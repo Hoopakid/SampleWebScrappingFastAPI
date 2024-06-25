@@ -112,7 +112,7 @@ async def translate_words(word: str, lang1: str, lang2: str):
 async def get_ticket_data():
     try:
         logging.info('Fetching data')
-        data = convert_data_to_excel()
+        data = await convert_data_to_excel()
         logging.info('Data fetched')
         return data
     except Exception as e:
