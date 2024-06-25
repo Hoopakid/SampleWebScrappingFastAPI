@@ -1,17 +1,21 @@
 import os
-import requests
 import logging
+import requests
+import asyncio
 import pandas as pd
 
-from time import sleep
 from dotenv import load_dotenv
 from datetime import datetime, timedelta
 from playwright.async_api import async_playwright
+from bs4 import BeautifulSoup
+from time import sleep
 
 load_dotenv()
 
 MARGARIT_USERNAME = os.environ.get('MARGARIT_USER')
 MARGARIT_PASSWORD = os.environ.get('MARGARIT_PASSWORD')
+TICKET_LOGIN = os.environ.get('TICKET_UZ_LOGIN')
+TICKET_PASSWORD = os.environ.get('TICKET_UZ_PASSWORD')
 
 logging.basicConfig(level=logging.INFO)
 
@@ -70,3 +74,97 @@ async def getting_data():
                 combined[key] = value
         cnt += 1
     return {'success': True, 'data': new_data}
+
+
+async def authorize_user():
+    async with async_playwright() as p:
+        chromium = await p.chromium.launch(headless=True)
+        page = await chromium.new_page()
+        await page.goto('https://uzticket.uz/index.php?r=site/login')
+        await page.fill('#LoginForm_username', TICKET_LOGIN)
+
+        await page.fill('#LoginForm_password', TICKET_PASSWORD)
+
+        await page.click('#login-form input[type="submit"]')
+        sleep(2)
+        cookies = await page.context.cookies()
+        for cookie in cookies:
+            if cookie['name'] == 'PHPSESSID':
+                return cookie['value']
+    return ''
+
+
+def convert_data_to_excel():
+    url = 'https://uzticket.uz/index.php?r=ticketUzs/admin'
+    cookies = {'PHPSESSID': asyncio.run(authorize_user()), 'from_date': '20.06.2024', 'to_date': '22.06.2024'}
+
+    response = requests.get(url, cookies=cookies)
+    status = False
+    if response.status_code == 200:
+        soup = BeautifulSoup(response.text, 'html.parser')
+        table = soup.find('table', {'class': 'items'})
+
+        if table:
+            rows = []
+            tbody = table.find('tbody')
+            tfoot = table.find('tfoot')
+
+            if tbody:
+                for row in tbody.find_all('tr'):
+                    cells = row.find_all('td')
+                    row_data = [cell.text.strip() for cell in cells]
+                    rows.append(row_data)
+
+            tfoot_rows = []
+            if tfoot:
+                for row in tfoot.find_all('tr'):
+                    cells = row.find_all('td')
+                    row_data = [cell.text.strip() for cell in cells]
+                    tfoot_rows.append(row_data)
+
+            column_names = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17',
+                            '18', '19', '20', '21']
+
+            if rows:
+                df = pd.DataFrame(rows)
+                if len(df.columns) == len(column_names):
+                    df.columns = column_names
+                df.to_excel('tbody.xlsx', index=False)
+                status = True
+
+            if tfoot_rows:
+                tfoot_df = pd.DataFrame(tfoot_rows)
+                if len(tfoot_df.columns) == len(column_names):
+                    tfoot_df.columns = column_names
+                tfoot_df.to_excel('tfoot.xlsx', index=False)
+    if status == True:
+        tbody_df = pd.read_excel('tbody.xlsx', usecols=['1', '18'])
+        tfoot_df = pd.read_excel('tfoot.xlsx', usecols=['18'])
+
+        data = {}
+        for idx, row in tbody_df.iterrows():
+            value1 = row['1']
+            value18 = row['18']
+            if value1 not in data:
+                data[value1] = {
+                    'responsible_user': value1,
+                    'opportunity': value18,
+                    'count': 1
+                }
+            else:
+                data[value1]['opportunity'] += value18
+                data[value1]['count'] += 1
+        value_all = 0
+        for idx, row in tfoot_df.iterrows():
+            value_all = row['18']
+
+        finally_data = [value_all, ]
+        for key, val in data.items():
+            finally_data.append(val)
+
+        return finally_data
+
+    return []
+
+
+print(convert_data_to_excel())

@@ -6,7 +6,7 @@ import logging
 from fastapi.middleware.cors import CORSMiddleware
 
 from Bitrix.formatting import format_bitrix_data
-from all import getting_data
+from all import getting_data, convert_data_to_excel
 from scrapping import use_playwright, take_screenshot, convert_to_xlsx, translate_word
 from fastapi.exceptions import HTTPException
 from fastapi.responses import FileResponse
@@ -107,5 +107,15 @@ async def translate_words(word: str, lang1: str, lang2: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+@router.get('/get-ticket-data')
+async def get_ticket_data():
+    try:
+        logging.info('Fetching data')
+        data = convert_data_to_excel()
+        logging.info('Data fetched')
+        return data
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 app.include_router(router)
