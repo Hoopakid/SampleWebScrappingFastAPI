@@ -36,7 +36,7 @@ async def use_playwright():
         ctx = []
         for data in datas[1:]:
             formatted_date = datetime.strptime(data[13], '%Y-%m-%d').date()
-            if formatted_date == datetime.today().date():
+            if formatted_date == datetime.today().date() - timedelta(days=1):
                 ctx.append({
                     'client_id': data[1],
                     'agent_id': data[2],
