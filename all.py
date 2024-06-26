@@ -1,3 +1,4 @@
+import asyncio
 import os
 import logging
 import requests
@@ -34,9 +35,9 @@ async def getting_data():
         page = await context.new_page()
         await page.goto('https://margarittotash.salesdoc.io/site/login')
         username = page.locator('[name="LoginForm[username]"]')
-        await username.fill('yahyo')
+        await username.fill(MARGARIT_USERNAME)
         password = page.get_by_placeholder('Пароль')
-        await password.fill('7777')
+        await password.fill(MARGARIT_PASSWORD)
         button = page.get_by_role('button')
         await button.click()
         sleep(7)
@@ -45,9 +46,8 @@ async def getting_data():
         if cookie == 'None':
             return {'success': False}
     yesterday = (datetime.now() - timedelta(days=1)).date()
-    today = (datetime.now()).date()
     response = requests.get(
-        'https://margarittotash.salesdoc.io/report/reportBuilder/getResult?reportType=order&datestart=2024-09-10&endstart=2024-06-21&bydate=DATE_LOAD&status%5B%5D=2&status%5B%5D=3&sum=on&count=on&akb=on&field=%5B%22date%22%2C%22client%22%2C%22city%22%2C%22agent%22%2C%22product%22%2C%22productCat%22%5D',
+        f'https://margarittotash.salesdoc.io/report/reportBuilder/getResult?reportType=order&datestart={yesterday}&endstart={yesterday}&bydate=DATE&status%5B%5D=2&status%5B%5D=3&sum=on&volume=on&akb=on&field=%5B%22date%22%2C%22client%22%2C%22city%22%2C%22agent%22%2C%22product%22%2C%22productCat%22%5D',
         cookies={'PHPSESSID': cookie})
     df = pd.DataFrame(response.json())
     df.to_csv('data.csv', index=False)
@@ -124,7 +124,8 @@ async def convert_data_to_excel():
                             row_data = [cell.text.strip() for cell in cells]
                             tfoot_rows.append(row_data)
 
-                    column_names = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21']
+                    column_names = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15',
+                                    '16', '17', '18', '19', '20', '21']
 
                     if rows:
                         df = pd.DataFrame(rows)
@@ -138,7 +139,6 @@ async def convert_data_to_excel():
                             tfoot_df.columns = column_names
                         tfoot_df.to_excel('tfoot.xlsx', index=False)
 
-                    # Now read and process the data
                     tbody_df = pd.read_excel('tbody.xlsx', usecols=['1', '18'])
                     tfoot_df = pd.read_excel('tfoot.xlsx', usecols=['18'])
 

@@ -1,3 +1,4 @@
+import logging
 import os
 import asyncio
 import aiohttp
@@ -10,6 +11,8 @@ load_dotenv()
 
 MARGARIT_USERNAME = os.environ.get('MARGARIT_USER')
 MARGARIT_PASSWORD = os.environ.get('MARGARIT_PASSWORD')
+
+logging.basicConfig(level=logging.INFO)
 
 
 async def use_playwright():
@@ -31,13 +34,15 @@ async def use_playwright():
         raw_data = await informations.text_content()
         datas = json.loads(raw_data)
         ctx = []
-        for data in datas:
-            ctx.append({
-                'client_id': data[1],
-                'agent_id': data[2],
-                'product_id': data[6],
-                'date_ordered': data[13]
-            })
+        for data in datas[1:]:
+            formatted_date = datetime.strptime(data[13], '%Y-%m-%d').date()
+            if formatted_date == datetime.today().date():
+                ctx.append({
+                    'client_id': data[1],
+                    'agent_id': data[2],
+                    'product_id': data[6],
+                    'date_ordered': data[13]
+                })
         finally_data = {}
         for data in ctx:
             product_id = data['product_id']
@@ -161,5 +166,6 @@ async def grouped_agent_clients():
                             agent_name = agent['result']['agent'][0]['name']
                             val['agent_id'] = agent_name
         return grouped
-    except Exception:
+    except Exception as e:
+        logging.info(e)
         return False

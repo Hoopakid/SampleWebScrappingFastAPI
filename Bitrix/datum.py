@@ -92,10 +92,11 @@ async def get_deal_by_id(deal_id: int):
 
 async def get_calls_fast():
     yesterday_date = (datetime.now() - timedelta(days=1)).date()
+    today = datetime.now().date()
     calls = []
     params = {
         'filter': {
-            'TYPE_ID': 2, 'OWNER_TYPE_ID': 2, '>CREATED': yesterday_date
+            'TYPE_ID': 2, 'OWNER_TYPE_ID': 2, '>CREATED': yesterday_date, '<CREATED': today
         },
         'select': ['OWNER_ID', 'CREATED', 'AUTHOR_ID', 'START_TIME', 'END_TIME',
                    'IS_INCOMING_CHANNEL', 'LAST_UPDATE', 'SUBJECT'],
