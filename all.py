@@ -94,20 +94,31 @@ async def authorize_user():
     return ''
 
 
+async def fetch_data_for_date(session, url, cookies, date):
+    cookies['from_date'] = date.strftime('%d.%m.%Y')
+    cookies['to_date'] = date.strftime('%d.%m.%Y')
+    async with session.get(url, cookies=cookies) as response:
+        if response.status == 200:
+            html = await response.text()
+            return html
+    return None
+
+
 async def convert_data_to_excel():
     url = 'https://uzticket.uz/index.php?r=ticketUzs/admin'
-    cookies = {'PHPSESSID': await authorize_user(), 'from_date': '20.06.2024', 'to_date': '22.06.2024'}
+    today = datetime.now().date()
+    start_of_week = today - timedelta(days=today.weekday())
+    cookies = {'PHPSESSID': await authorize_user()}
 
-    async with aiohttp.ClientSession(cookies=cookies) as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                html = await response.text()
-
+    async with aiohttp.ClientSession() as session:
+        all_data = []
+        for single_date in (start_of_week + timedelta(n) for n in range((today - start_of_week).days + 1)):
+            html = await fetch_data_for_date(session, url, cookies, single_date)
+            if html:
                 soup = BeautifulSoup(html, 'html.parser')
                 table = soup.find('table', {'class': 'items'})
 
                 if table:
-                    rows = []
                     tbody = table.find('tbody')
                     tfoot = table.find('tfoot')
 
@@ -115,55 +126,71 @@ async def convert_data_to_excel():
                         for row in tbody.find_all('tr'):
                             cells = row.find_all('td')
                             row_data = [cell.text.strip() for cell in cells]
-                            rows.append(row_data)
+                            row_data.append(single_date.strftime('%A'))
+                            all_data.append(row_data)
 
-                    tfoot_rows = []
                     if tfoot:
-                        for row in tfoot.find_all('tr'):
-                            cells = row.find_all('td')
-                            row_data = [cell.text.strip() for cell in cells]
-                            tfoot_rows.append(row_data)
+                        tfoot_row = tfoot.find('tr')
+                        cells = tfoot_row.find_all('td')
+                        tfoot_data = [cell.text.strip() for cell in cells]
+                        all_data.append(tfoot_data)
 
-                    column_names = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15',
-                                    '16', '17', '18', '19', '20', '21']
+    if not all_data:
+        return [0]
 
-                    if rows:
-                        df = pd.DataFrame(rows)
-                        if len(df.columns) == len(column_names):
-                            df.columns = column_names
-                        df.to_excel('tbody.xlsx', index=False)
+    column_names = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '10', '11', '12', '13', '14', '15', '16', '17', '18',
+                    '19', '20', '21', 'day']
+    df = pd.DataFrame(all_data)
 
-                    if tfoot_rows:
-                        tfoot_df = pd.DataFrame(tfoot_rows)
-                        if len(tfoot_df.columns) == len(column_names):
-                            tfoot_df.columns = column_names
-                        tfoot_df.to_excel('tfoot.xlsx', index=False)
+    if len(df.columns) == len(column_names):
+        df.columns = column_names
 
-                    tbody_df = pd.read_excel('tbody.xlsx', usecols=['1', '18'])
-                    tfoot_df = pd.read_excel('tfoot.xlsx', usecols=['18'])
+    if not df.empty:
+        tbody_df = df[df['day'] != '']
+        tfoot_df = df[df['day'] == '']
 
-                    data = {}
-                    for idx, row in tbody_df.iterrows():
-                        value1 = row['1']
-                        value18 = row['18']
-                        if value1 not in data:
-                            data[value1] = {
-                                'responsible_user': value1,
-                                'opportunity': value18,
-                                'count': 1
-                            }
-                        else:
-                            data[value1]['opportunity'] += value18
-                            data[value1]['count'] += 1
+        data = {}
+        for idx, row in tbody_df.iterrows():
+            user = row['1']
+            day = row['day']
+            try:
+                opportunity = float(row.get('18', 0) or 0)
+            except (ValueError, TypeError):
+                opportunity = 0
+            if user not in data:
+                data[user] = {
+                    'name': user,
+                    'today_opportunity': 0,
+                    'today_count': 0,
+                    'monday': 0,
+                    'tuesday': 0,
+                    'wednesday': 0,
+                    'thursday': 0,
+                    'friday': 0,
+                    'saturday': 0,
+                    'sunday': 0
+                }
+            if day:
+                data[user][day.lower()] += opportunity
+                if day.lower() == today.strftime('%A').lower():
+                    data[user]['today_opportunity'] += opportunity
+                    data[user]['today_count'] += 1
 
-                    value_all = 0
-                    for idx, row in tfoot_df.iterrows():
-                        value_all = row['18']
+        total_sales = 0
+        for idx, row in tfoot_df.iterrows():
+            try:
+                total_sales = float(row.get('18', 0) or 0)
+            except (ValueError, TypeError):
+                total_sales = 0
 
-                    finally_data = [value_all, ]
-                    for key, val in data.items():
-                        finally_data.append(val)
+        finally_data = [total_sales]
+        for key, val in data.items():
+            finally_data.append(val)
 
-                    return finally_data
+        filtered_data = [data for data in finally_data if
+                         data and data.get('name') != 'Нет результатов.' and data.get('name') != 0 and data.get(
+                             'name') != '']
 
-    return []
+        return filtered_data
+
+    return [0]
