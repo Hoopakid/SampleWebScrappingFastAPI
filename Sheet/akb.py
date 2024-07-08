@@ -29,7 +29,7 @@ async def use_playwright():
         yesterday = (datetime.today() - timedelta(days=1)).date()
         today = datetime.today().date()
         await page.goto(
-            f'https://margarittotash.salesdoc.io/report/saleDetail/pivotData?date_load={yesterday},{today}')
+            f'https://margarittotash.salesdoc.io/report/saleDetail/pivotData?date_load=2024-05-01,2024-05-09')
         informations = await page.query_selector('pre')
         raw_data = await informations.text_content()
         datas = json.loads(raw_data)
