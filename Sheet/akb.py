@@ -3,7 +3,7 @@ import os
 import asyncio
 import aiohttp
 import json
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 from playwright.async_api import async_playwright
 from dotenv import load_dotenv
 
@@ -36,7 +36,8 @@ async def use_playwright():
         ctx = []
         for data in datas[1:]:
             formatted_date = datetime.strptime(data[13], '%Y-%m-%d').date()
-            if formatted_date == datetime.today().date() - timedelta(days=1):
+            # datetime.today().date() - timedelta(days=1)
+            if formatted_date >= date(2024, 5, 1) and formatted_date <= date(2024, 5, 9):
                 ctx.append({
                     'client_id': data[1],
                     'agent_id': data[2],
