@@ -47,7 +47,7 @@ async def getting_data():
             return {'success': False}
     yesterday = (datetime.now() - timedelta(days=1)).date()
     response = requests.get(
-        f'https://margarittotash.salesdoc.io/report/reportBuilder/getResult?reportType=order&datestart={yesterday}&endstart={yesterday}&bydate=DATE&status%5B%5D=2&status%5B%5D=3&sum=on&volume=on&akb=on&field=%5B%22date%22%2C%22client%22%2C%22city%22%2C%22agent%22%2C%22product%22%2C%22productCat%22%5D',
+        f'https://margarittotash.salesdoc.io/report/reportBuilder/getResult?reportType=order&datestart=2024-05-01&endstart=2024-05-09&bydate=DATE&status%5B%5D=2&status%5B%5D=3&sum=on&volume=on&akb=on&field=%5B%22date%22%2C%22client%22%2C%22city%22%2C%22agent%22%2C%22product%22%2C%22productCat%22%5D',
         cookies={'PHPSESSID': cookie})
     df = pd.DataFrame(response.json())
     df.to_csv('data.csv', index=False)
