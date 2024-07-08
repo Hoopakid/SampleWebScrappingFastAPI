@@ -43,6 +43,7 @@ async def getting_data():
         sleep(7)
         cookies = await context.cookies()
         cookie = get_cookie(cookies)
+        await browser.close()
         if cookie == 'None':
             return {'success': False}
     yesterday = (datetime.now() - timedelta(days=1)).date()
