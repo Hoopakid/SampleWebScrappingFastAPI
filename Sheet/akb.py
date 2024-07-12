@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 async def use_playwright():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=True)
+        browser = await p.chromium.launch(headless=False)
         page = await browser.new_page()
         await page.goto('https://margarittotash.salesdoc.io/site/login')
         username = page.locator('[name="LoginForm[username]"]')
@@ -35,14 +35,14 @@ async def use_playwright():
         datas = json.loads(raw_data)
         ctx = []
         for data in datas[1:]:
-            formatted_date = datetime.strptime(data[13], '%Y-%m-%d').date()
+            formatted_date = datetime.strptime(data[14], '%Y-%m-%d').date()
             # datetime.today().date() - timedelta(days=1)
             if formatted_date >= date(2024, 5, 1) and formatted_date <= date(2024, 5, 9):
                 ctx.append({
                     'client_id': data[1],
                     'agent_id': data[2],
                     'product_id': data[6],
-                    'date_ordered': data[13]
+                    'date_ordered': data[14]
                 })
         finally_data = {}
         for data in ctx:
