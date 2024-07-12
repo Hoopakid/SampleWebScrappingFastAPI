@@ -17,7 +17,7 @@ logging.basicConfig(level=logging.INFO)
 
 async def use_playwright():
     async with async_playwright() as p:
-        browser = await p.chromium.launch(headless=False)
+        browser = await p.chromium.launch(headless=True)
         page = await browser.new_page()
         await page.goto('https://margarittotash.salesdoc.io/site/login')
         username = page.locator('[name="LoginForm[username]"]')
